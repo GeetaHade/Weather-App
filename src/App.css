@@ -98,3 +98,45 @@ button:hover {
 .desc {
   font-size: 14px;
 }
+
+.forecast {
+  margin-top: 20px;
+}
+
+.forecast-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.forecast-card {
+  background: rgba(255, 255, 255, 0.2); /* Glass effect */
+  padding: 15px;
+  border-radius: 10px;
+  width: 100px;
+  text-align: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease-in-out;
+}
+
+.forecast-card:hover {
+  transform: scale(1.05);
+}
+
+.day {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.temp {
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.desc {
+  font-size: 12px;
+}
+
+
