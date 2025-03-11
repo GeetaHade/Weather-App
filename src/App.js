@@ -6,6 +6,8 @@ function App() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const API_KEY = "ba491a187a72397f5ee8e5f3253ff2e8"; // Replace with your API Key
   const BACKEND_URL = "http://localhost:5001"; // Backend Server URL
@@ -65,23 +67,74 @@ function App() {
     }
   };
 
-  // Save weather data to backend
-  const saveWeather = async () => {
-    if (!weather) return alert("No weather data to save!");
+  // Validate date range
+  const isDateRangeValid = () => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return start <= end;
+  };
 
-    const weatherData = {
-      city: weather.name,
-      temperature: weather.main.temp,
-      humidity: weather.main.humidity,
-      condition: weather.weather[0].main, // One-word condition
-      wind_speed: weather.wind.speed,
-    };
+  // Fetch weather data for a date range
+  const fetchWeatherDataForRange = async () => {
+    if (!isDateRangeValid()) {
+      alert("Start date must be before end date.");
+      return;
+    }
 
-    try {
-      await axios.post(`${BACKEND_URL}/saveWeather`, weatherData);
-      alert("Weather data saved!");
-    } catch (error) {
-      console.error("Error saving weather data:", error);
+    const weatherDataForRange = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    let currentDate = start;
+
+    // Loop over the date range and fetch weather data for each date
+    while (currentDate <= end) {
+      const formattedDate = currentDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+      try {
+        let weatherResponse;
+        let forecastResponse;
+
+        if (city) {
+          weatherResponse = await axios.get(
+            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+          );
+          forecastResponse = await axios.get(
+            `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=metric`
+          );
+        }
+
+        const forecastForDay = forecastResponse.data.list.find((entry) =>
+          entry.dt_txt.startsWith(formattedDate)
+        );
+
+        if (forecastForDay) {
+          const weatherData = {
+            temperature: forecastForDay.main.temp,
+            humidity: forecastForDay.main.humidity,
+            condition: forecastForDay.weather[0].main,
+            wind_speed: forecastForDay.wind.speed,
+            date: formattedDate,
+          };
+          weatherDataForRange.push(weatherData);
+        }
+
+        // Move to the next date
+        currentDate.setDate(currentDate.getDate() + 1);
+      } catch (error) {
+        console.error("Error fetching weather data for date:", currentDate, error);
+      }
+    }
+
+    if (weatherDataForRange.length > 0) {
+      // Save weather data to the backend
+      try {
+        await axios.post(`${BACKEND_URL}/saveWeatherRange`, {
+          city: city,
+          weatherData: weatherDataForRange,
+        });
+        alert("Weather data saved for the selected range!");
+      } catch (error) {
+        console.error("Error saving weather data:", error);
+      }
     }
   };
 
@@ -99,6 +152,21 @@ function App() {
         <button onClick={getLocation}>Get Location</button> {/* Get Location Button */}
       </div>
 
+      {/* Date Range Selection */}
+      <div className="date-range-container">
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+        <button onClick={fetchWeatherDataForRange}>Fetch Weather for Range</button>
+      </div>
+
       {weather && (
         <div className="weather-info">
           <h3>{weather.name}</h3>
@@ -106,7 +174,6 @@ function App() {
           <p>💧 Humidity: {weather.main.humidity}%</p>
           <p>🌥️ Weather: {weather.weather[0].main}</p>
           <p>💨 Wind Speed: {weather.wind.speed} m/s</p>
-          <button onClick={saveWeather}>Save Data</button>
         </div>
       )}
 

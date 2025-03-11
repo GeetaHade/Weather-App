@@ -12,8 +12,9 @@ app.use(bodyParser.json());
 
 // Initialize SQLite Database
 const db = new sqlite3.Database("./weather.db", (err) => {
-  if (err) console.error("Error opening database:", err.message);
-  else {
+  if (err) {
+    console.error("Error opening database:", err.message);
+  } else {
     db.run(
       `CREATE TABLE IF NOT EXISTS weather (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,32 +32,63 @@ const db = new sqlite3.Database("./weather.db", (err) => {
   }
 });
 
-// Route to Save Weather Data
-app.post("/saveWeather", (req, res) => {
-  const { city, temperature, humidity, condition, wind_speed } = req.body;
-  const date = new Date().toISOString();
+// Route to Save Weather Data for a Date Range
+app.post("/saveWeatherRange", (req, res) => {
+  const { city, weatherData } = req.body;
 
-  db.run(
-    `INSERT INTO weather (city, temperature, humidity, condition, wind_speed, date)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [city, temperature, humidity, condition, wind_speed, date],
-    function (err) {
+  if (!weatherData || weatherData.length === 0) {
+    return res.status(400).json({ error: "No weather data provided" });
+  }
+
+  const insertWeather = `
+    INSERT INTO weather (city, temperature, humidity, condition, wind_speed, date)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  // Use a transaction to insert all weather data at once
+  db.serialize(() => {
+    const stmt = db.prepare(insertWeather);
+
+    weatherData.forEach((entry) => {
+      const { temperature, humidity, condition, wind_speed, date } = entry;
+      stmt.run(city, temperature, humidity, condition, wind_speed, date); // Store the correct date
+    });
+
+    stmt.finalize((err) => {
       if (err) {
-        res.status(500).json({ error: err.message });
-      } else {
-        res.json({ message: "Weather data saved", id: this.lastID });
+        console.error("Error saving data:", err.message);
+        return res.status(500).json({ error: "Error saving weather data" });
       }
-    }
-  );
+      res.json({ message: "Weather data saved for range successfully" });
+    });
+  });
 });
 
-// Route to Fetch Saved Weather Data
-app.get("/getWeather", (req, res) => {
-  db.all("SELECT * FROM weather ORDER BY date DESC", [], (err, rows) => {
-    if (err) res.status(500).json({ error: err.message });
-    else res.json(rows);
+// Route to Fetch Weather Data for a Date Range
+app.get("/getWeatherRange", (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ error: "Please provide both startDate and endDate" });
+  }
+
+  const query = `
+    SELECT * FROM weather
+    WHERE date BETWEEN ? AND ?
+    ORDER BY date DESC
+  `;
+
+  db.all(query, [startDate, endDate], (err, rows) => {
+    if (err) {
+      console.error("Error fetching weather data:", err.message);
+      return res.status(500).json({ error: "Error fetching weather data" });
+    }
+
+    res.json(rows);
   });
 });
 
 // Start Server
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
