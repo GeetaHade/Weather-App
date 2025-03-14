@@ -175,6 +175,20 @@ function App() {
       alert("Failed to update weather data");
     }
   };
+
+  const deleteWeatherData = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this record?")) return;
+  
+    try {
+      await axios.delete(`${BACKEND_URL}/deleteWeather/${id}`);
+      alert("Weather data deleted successfully!");
+      fetchSavedWeatherData(); // Refresh after deletion
+    } catch (error) {
+      console.error("Error deleting weather data:", error);
+      alert("Failed to delete weather data");
+    }
+  };
+  
   
 
   return (
@@ -302,7 +316,14 @@ function App() {
           <td>{entry.wind_speed} m/s</td>
           <td>
             <button onClick={() => setEditingEntry(entry)}>Edit</button>
+            <button
+              onClick={() => deleteWeatherData(entry.id)}
+              //style={{ marginLeft: "5px", color: "red" }}
+            >
+              Delete
+            </button>
           </td>
+
         </>
       )}
     </tr>

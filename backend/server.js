@@ -143,6 +143,22 @@ app.put("/updateWeather/:id", (req, res) => {
   );
 });
 
+// Route to delete weather data by ID
+app.delete("/deleteWeather/:id", (req, res) => {
+  const { id } = req.params;
+
+  const query = `DELETE FROM weather WHERE id = ?`;
+
+  db.run(query, [id], (err) => {
+    if (err) {
+      console.error("Error deleting weather data:", err.message);
+      return res.status(500).json({ error: "Failed to delete weather data" });
+    }
+    res.json({ message: "Weather data deleted successfully" });
+  });
+});
+
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
