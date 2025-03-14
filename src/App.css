@@ -15,11 +15,11 @@ body {
 .app {
   padding: 20px;
   width: 90%;
-  max-width: 500px;
+  max-width: 1500px; /* Increased from 500px to 800px */
   background: rgba(255, 255, 255, 0.2); /* Transparent background */
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px); /* Glass effect */
+  backdrop-filter: blur(10px);
 }
 
 h2 {
@@ -99,44 +99,85 @@ button:hover {
   font-size: 14px;
 }
 
-.forecast {
-  margin-top: 20px;
+.weather-table {
+  width: 100%; /* Ensure table stretches to full width */
+  border-collapse: collapse;
 }
 
-.forecast-container {
+.weather-table th, .weather-table td {
+  padding: 4px;
+  text-align: center;
+  border: 1px solid #ddd;
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.date-range-container {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  flex-wrap: wrap;
+  align-items: center; /* Ensures vertical alignment */
+  gap: 10px; /* Space between elements */
+  margin-bottom: 20px;
 }
 
-.forecast-card {
-  background: rgba(255, 255, 255, 0.2); /* Glass effect */
-  padding: 15px;
-  border-radius: 10px;
-  width: 100px;
-  text-align: center;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease-in-out;
-}
-
-.forecast-card:hover {
-  transform: scale(1.05);
-}
-
-.day {
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.temp {
+button {
+  padding: 5px 8px;
   font-size: 14px;
-  margin: 5px 0;
+  margin: 0 2px;
+  background-color: #007bff; /* Keep color consistent */
+  color: white;
+  border: none; /* Remove button border */
+  outline: none; /* Remove focus outline */
+  cursor: pointer;
+  border-radius: 5px; /* Add subtle rounding */
 }
 
-.desc {
-  font-size: 12px;
+button:hover {
+  background-color: #0056b3;
 }
 
+button:active {
+  transform: scale(0.98);
+}
+
+.saved-weather {
+  margin-top: 20px;
+  overflow-x: auto; /* Allow scrolling if the table overflows */
+}
+
+.weather-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  overflow-x: auto; /* Allow scrolling */
+  display: block; /* Makes the table scrollable horizontally */
+}
+
+.weather-table th,
+.weather-table td {
+  padding: 8px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.weather-table td button {
+  padding: 5px 10px;
+  background-color: #007bff; /* Red color for delete button */
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.weather-table td button:hover {
+  background-color: #0056b3;
+}
+
+.weather-table td button:active {
+  transform: scale(0.98);
+}
+
+.weather-table td button.delete-btn {
+  margin-left: 10px; /* Space between buttons */
+}
 
