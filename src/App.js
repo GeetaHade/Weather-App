@@ -6,6 +6,7 @@ function App() {
   const [city, setCity] = useState("");
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
+  const [savedWeather, setSavedWeather] = useState(null); // Added state for saved weather data
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -138,6 +139,23 @@ function App() {
     }
   };
 
+  // Fetch saved weather data from the database for the entered city
+  const fetchSavedWeatherData = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/getWeatherByCity`, {
+        params: { city: city },
+      });
+      if (response.data.length > 0) {
+        setSavedWeather(response.data);
+      } else {
+        alert("No weather data found for the entered city in the database.");
+        setSavedWeather(null);
+      }
+    } catch (error) {
+      console.error("Error fetching saved weather data:", error);
+    }
+  };
+
   return (
     <div className="app">
       <h2>Weather App</h2>
@@ -150,6 +168,7 @@ function App() {
         />
         <button onClick={() => getWeather(city)}>Get Weather</button>
         <button onClick={getLocation}>Get Location</button> {/* Get Location Button */}
+        <button onClick={fetchSavedWeatherData}>Fetch Saved Weather Data</button> {/* Fetch Saved Data Button */}
       </div>
 
       {/* Date Range Selection */}
@@ -174,6 +193,36 @@ function App() {
           <p>💧 Humidity: {weather.main.humidity}%</p>
           <p>🌥️ Weather: {weather.weather[0].main}</p>
           <p>💨 Wind Speed: {weather.wind.speed} m/s</p>
+        </div>
+      )}
+
+      {savedWeather && (
+        <div className="saved-weather">
+          <h3>Saved Weather Data</h3>
+          <table className="weather-table">
+            <thead>
+              <tr>
+                <th>City</th>
+                <th>Date</th>
+                <th>Temperature (°C)</th>
+                <th>Humidity (%)</th>
+                <th>Condition</th>
+                <th>Wind Speed (m/s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {savedWeather.map((entry, index) => (
+                <tr key={index}>
+                  <td>{entry.city}</td>
+                  <td>{new Date(entry.date).toLocaleDateString()}</td>
+                  <td>{entry.temperature}°C</td>
+                  <td>{entry.humidity}%</td>
+                  <td>{entry.condition}</td>
+                  <td>{entry.wind_speed} m/s</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

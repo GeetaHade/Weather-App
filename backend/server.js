@@ -83,12 +83,34 @@ app.get("/getWeatherRange", (req, res) => {
       console.error("Error fetching weather data:", err.message);
       return res.status(500).json({ error: "Error fetching weather data" });
     }
+    res.json(rows);
+  });
+});
 
+// Route to Fetch Saved Weather Data for a City
+app.get("/getWeatherByCity", (req, res) => {
+  const { city } = req.query;
+
+  if (!city) {
+    return res.status(400).json({ error: "Please provide a city" });
+  }
+
+  const query = `
+    SELECT * FROM weather
+    WHERE city = ?
+    ORDER BY date DESC
+  `;
+
+  db.all(query, [city], (err, rows) => {
+    if (err) {
+      console.error("Error fetching weather data:", err.message);
+      return res.status(500).json({ error: "Error fetching weather data" });
+    }
     res.json(rows);
   });
 });
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
