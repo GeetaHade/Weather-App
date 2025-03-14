@@ -110,6 +110,39 @@ app.get("/getWeatherByCity", (req, res) => {
   });
 });
 
+// ✅ Route to UPDATE weather data by id
+app.put("/updateWeather/:id", (req, res) => {
+  const { id } = req.params;
+  const { temperature, humidity, condition, wind_speed } = req.body;
+
+  if (!temperature || !humidity || !condition || !wind_speed) {
+    return res.status(400).json({ error: "All fields must be provided" });
+  }
+
+  const query = `
+    UPDATE weather
+    SET temperature = ?, humidity = ?, condition = ?, wind_speed = ?
+    WHERE id = ?
+  `;
+
+  db.run(
+    query,
+    [temperature, humidity, condition, wind_speed, id],
+    function (err) {
+      if (err) {
+        console.error("Error updating weather data:", err.message);
+        return res.status(500).json({ error: "Failed to update weather data" });
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).json({ error: "Record not found" });
+      }
+
+      res.json({ message: "Weather data updated successfully" });
+    }
+  );
+});
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

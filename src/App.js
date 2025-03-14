@@ -9,6 +9,8 @@ function App() {
   const [savedWeather, setSavedWeather] = useState(null); // Added state for saved weather data
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [editingEntry, setEditingEntry] = useState(null);
+
 
   const API_KEY = "ba491a187a72397f5ee8e5f3253ff2e8"; // Replace with your API Key
   const BACKEND_URL = "http://localhost:5001"; // Backend Server URL
@@ -156,6 +158,25 @@ function App() {
     }
   };
 
+  const updateWeatherData = async (entry) => {
+    try {
+      await axios.put(`${BACKEND_URL}/updateWeather/${entry.id}`, {
+        temperature: entry.temperature,
+        humidity: entry.humidity,
+        condition: entry.condition,
+        wind_speed: entry.wind_speed,
+      });
+  
+      alert("Weather data updated successfully!");
+      setEditingEntry(null);
+      fetchSavedWeatherData(); // Refresh after updating
+    } catch (error) {
+      console.error("Error updating weather data:", error);
+      alert("Failed to update weather data");
+    }
+  };
+  
+
   return (
     <div className="app">
       <h2>Weather App</h2>
@@ -211,17 +232,83 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {savedWeather.map((entry, index) => (
-                <tr key={index}>
-                  <td>{entry.city}</td>
-                  <td>{new Date(entry.date).toLocaleDateString()}</td>
-                  <td>{entry.temperature}°C</td>
-                  <td>{entry.humidity}%</td>
-                  <td>{entry.condition}</td>
-                  <td>{entry.wind_speed} m/s</td>
-                </tr>
-              ))}
-            </tbody>
+  {savedWeather.map((entry, index) => (
+    <tr key={index}>
+      {editingEntry?.id === entry.id ? (
+        <>
+          <td>{entry.city}</td>
+          <td>{new Date(entry.date).toLocaleDateString()}</td>
+          <td>
+            <input
+              type="number"
+              value={editingEntry.temperature}
+              onChange={(e) =>
+                setEditingEntry({
+                  ...editingEntry,
+                  temperature: e.target.value,
+                })
+              }
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              value={editingEntry.humidity}
+              onChange={(e) =>
+                setEditingEntry({
+                  ...editingEntry,
+                  humidity: e.target.value,
+                })
+              }
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              value={editingEntry.condition}
+              onChange={(e) =>
+                setEditingEntry({
+                  ...editingEntry,
+                  condition: e.target.value,
+                })
+              }
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              value={editingEntry.wind_speed}
+              onChange={(e) =>
+                setEditingEntry({
+                  ...editingEntry,
+                  wind_speed: e.target.value,
+                })
+              }
+            />
+          </td>
+          <td>
+            <button onClick={() => updateWeatherData(editingEntry)}>
+              Save
+            </button>
+          </td>
+        </>
+      ) : (
+        <>
+          <td>{entry.city}</td>
+          <td>{new Date(entry.date).toLocaleDateString()}</td>
+          <td>{entry.temperature}°C</td>
+          <td>{entry.humidity}%</td>
+          <td>{entry.condition}</td>
+          <td>{entry.wind_speed} m/s</td>
+          <td>
+            <button onClick={() => setEditingEntry(entry)}>Edit</button>
+          </td>
+        </>
+      )}
+    </tr>
+  ))}
+</tbody>
+
           </table>
         </div>
       )}
